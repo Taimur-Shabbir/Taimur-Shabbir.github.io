@@ -1,10 +1,14 @@
 ---
 layout: post
 title: "About the Author"
-author: "Paul Le"
+author: "Ali Taimur Shabbir"
 categories: facts
-tags: [sample]
+tags:
 image: cuba-4.jpg
 ---
 
-Hi there! I'm Paul. I’m a physics major turned programmer. Ever since I first learned how to program while taking a scientific computing for physics course, I have pursued programming as a passion, and as a career. Check out [my personal website](https://www.lenpaul.com/) for more information on my other projects (including more Jekyll themes!), as well as some of my writing.
+I'm a junior data scientist with experience in the consumer goods (at Coca Cola European Partners) and healthcare/manufacturing (at my own family business) industries. I'm proficient with Python, SQL, Tableau and Jira (Atlassian project management software) and love to work on interesting projects, whether that's finding out if rock musicians are really more depressed than musicians from other genres or uncovering out the best strategies to win in first person shooter, battle royale videogames such as Call of Duty: Warzone and PUBG.
+
+This is, of course, in addition to more business-case centric projects, which include creating a "social listening" model at Coca Cola for a new product launch and construction of a proprietary Enterprise Resource Planning software at my family business.
+
+I'm actively looking for data roles in London so please feel free to explore my portfolio and reach out with any questions or comments!
