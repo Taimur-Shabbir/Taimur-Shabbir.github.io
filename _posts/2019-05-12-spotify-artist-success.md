@@ -3,7 +3,7 @@ title: "End-to-End ML Project: Predicting Musician Success on Spotify to Inform 
 date: 2019-05-12
 tags: [spotify, artist success, streams, feature engineering, data wrangling, data science, machine learning]
 header:
-  image: "spencer-imbrock-unsplash.jpg"
+  image: spencer-imbrock-unsplash.jpg
 excerpt: ""
 mathjax: "true"
 ---
