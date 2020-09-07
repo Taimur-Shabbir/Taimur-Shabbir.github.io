@@ -2,10 +2,10 @@
 title: "End-to-End ML Project (Group): Time Series Problem of Forecasting Electrical Power Usage"
 date: 2019-03-06
 tags: [time series, ARIMA, naive forecast, autocorrelation, supervised learning]
-header:
-  image: dan-meyers-ThGkMFiIJ8o-unsplash.jpg
+#header:
+image: dan-meyers-ThGkMFiIJ8o-unsplash.jpg
 excerpt: "A group project in which my team and I use time series and supervised learning approaches to forecast electrical power usage for clients"
-mathjax: "true"
+#mathjax: "true"
 ---
 <sub> Photo by [Dan Meyers]('https://unsplash.com/@dmey503?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText') on Unsplash </sub>
 

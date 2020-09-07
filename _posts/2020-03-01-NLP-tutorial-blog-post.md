@@ -3,9 +3,9 @@ title: "Tutorial Blog Post - NLP: A Beginner's Brief Overview of Sentiment Analy
 date: 2020-03-01
 tags: [NLP, natural language processing, text data, sentiment analysis, tutorial]
 header:
-  image: 1.jpg
+image: 1.jpg
 excerpt: ""
-mathjax: "true"
+#mathjax: "true"
 ---
 
 

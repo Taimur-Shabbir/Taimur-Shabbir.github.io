@@ -2,10 +2,9 @@
 title: "Data Cleaning Post: Police Stop and Search Incidents within selected areas in the UK"
 date: 2020-04-07
 tags: [stop and search, police, UK police, data cleaning, data wrangling]
-header:
-  image: police.jpg
-excerpt: "A project focusing on cleaning and merging messy data sets with justifications"
-mathjax: "true"
+#header:
+image: police.jpg
+#mathjax: "true"
 ---
 
 

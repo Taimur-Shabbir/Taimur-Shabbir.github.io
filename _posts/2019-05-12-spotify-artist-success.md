@@ -2,10 +2,10 @@
 title: "End-to-End ML Project: Predicting Musician Success on Spotify to Inform Pre-emptive Signing Decision for Record Labels"
 date: 2019-05-12
 tags: [spotify, artist success, streams, feature engineering, data wrangling, data science, machine learning]
-header:
-  image: spencer-imbrock-unsplash.jpg
+#header:
+image: spencer-imbrock-unsplash.jpg
 excerpt: ""
-mathjax: "true"
+#mathjax: "true"
 ---
 
 
