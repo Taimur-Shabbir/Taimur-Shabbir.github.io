@@ -1,5 +1,5 @@
 ---
-title: "Data Visualisation Post - The Ebb and Flow of A Battle Royale Game: A Visual Guide"
+title: "Data Visualisation Post: The Ebb and Flow of A Battle Royale Game: A Visual Guide"
 date: 2020-05-02
 tags: [Data Visualisation, videogames, strategy, visualisation]
 #header:
