@@ -814,7 +814,7 @@ rmse = sqrt(mean_squared_error(test, predictions))
 print('RMSE: %.3f' % rmse)
 ```
 
-    RMSE: 265.592
+    RMSE: 672.923
 
 
 The RMSE turns out to be 672.923
@@ -1446,7 +1446,7 @@ Since we have found the Gradient Boosting regressor to be our best model, we wil
 
 We first find the naive baseline for the test data, which turns out to be and RMSE of 599.7.
 
-We find our Gradient Boosting algorithm to far outstrip this RMSE. We find the optimal confiiguration of hyperparameters for this algorithm to be XXXXXXX, with an associated RMSE of YYYYYYYY.
+We find our Gradient Boosting algorithm to far outstrip this RMSE. We find the optimal confiiguration of hyperparameters which gives an associated RMSE of 265.59
 
 
 ```python
