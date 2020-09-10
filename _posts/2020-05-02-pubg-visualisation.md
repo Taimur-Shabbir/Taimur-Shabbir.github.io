@@ -42,6 +42,8 @@ Playstyles in BR games can be imperfectly divided into two categories: i) Campin
 
 <img src="{{ site.url }}{{ site.baseurl }}//img/dd.jpg" alt="linearly separable data">
 
-<img src="{{site.url}}/img/dd.jpg" style="display: block; margin: auto;" />
+<img src="{{site.url}}/img/dd.jpg">
 
-<img src="{{site.url}}/images/dd.jpg" style="display: block; margin: auto;" />
+<img src="{{site.url}}/images/dd.jpg">
+
+<img src="/img/dd.jpg">
