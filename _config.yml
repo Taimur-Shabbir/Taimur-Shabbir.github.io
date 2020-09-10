@@ -18,6 +18,8 @@ title:		           "Data Science Portfolio"
 description:	       "A place for my projects"
 author:              "Ali Taimur Shabbir"
 
+url: https://taimur-shabbir.github.io/
+
 # RSS 2.0 can be used instead of Atom by uncommenting following two lines
 #feed:
 #  path: rss-feed.xml
