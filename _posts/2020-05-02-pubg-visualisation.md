@@ -41,3 +41,7 @@ Since there is so much data, I’ve used tiny (1%) random samples in places for 
 Playstyles in BR games can be imperfectly divided into two categories: i) Camping, where a player/team hides in an advantageous position, waits for opposing players to kill each other and engages only when enemies approach them or ii) Aggression, where players don’t stay in one position for long and may actively seek out enemies.
 
 <img src="{{ site.url }}{{ site.baseurl }}//img/dd.jpg" alt="linearly separable data">
+
+<img src="img/dd.jpg" alt="hi" class="inline"/>
+
+<img src="{{site.url}}/img/dd.jpg" style="display: block; margin: auto;" />
