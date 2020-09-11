@@ -3,7 +3,7 @@ title: "Data Cleaning Post: Police Stop and Search Incidents within selected are
 date: 2020-04-07
 tags: [stop and search, police, UK police, data cleaning, data wrangling]
 #header:
-image: pexels-william-sun-1098663.jpg
+image: zzz.jpg
 #mathjax: "true"
 ---
 
