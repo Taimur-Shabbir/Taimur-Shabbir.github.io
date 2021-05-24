@@ -3,7 +3,7 @@ title: "End to End ML Project: Salary Prediction"
 date: 2021-05-24
 tags: [Data Visualisation, Machine Learning, Feature Engineering]
 #header:
-image: j.jpg
+image: anne-nygard-OtqaCE_SEMI-unsplash.jpg
 #mathjax: "true"
 ---
 
@@ -380,6 +380,7 @@ plt.ylabel('Salary (Arbitrary Units)')
 
 <img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_24_1.png" alt="linearly separable data">
 
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_25_1.png" alt="linearly separable data">
 
 **Interpretation:**
 
