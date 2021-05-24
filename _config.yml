@@ -23,3 +23,26 @@ url: https://taimur-shabbir.github.io/
 # RSS 2.0 can be used instead of Atom by uncommenting following two lines
 #feed:
 #  path: rss-feed.xml
+
+logo: "/assets/images/MM_Ali Taimur Shabbir2-02.png"
+
+minimal_mistakes_skin: "air"
+
+defaults:
+  # _posts
+  - scope:
+      path: ""
+      type: posts
+    values:
+      read_time: true
+      author_profile: true
+
+search: true
+
+# author
+
+author:
+  name     : "Taimur Shabbir"
+  avatar   : "/assets/images/avatar.png"
+  bio      : "Visions of a future"
+  location : "London, UK"

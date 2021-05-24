@@ -1880,6 +1880,11 @@ def train_test_model(gb_reg_tuned, X_train, y_train, X_test, y_test):
 
     # apply quadratic transform to train set
     pr_train = PolynomialFeatures(degree = 2, include_bias = False)
+
+    X_train = X_train.drop(['salary', 'jobId', 'companyId',
+                        'jobType', 'degree', 'major',
+                        'industry'], axis = 1)
+
     x_polly_train = pr_train.fit_transform(X_train)
 
     # initialise tuned model
@@ -1892,6 +1897,11 @@ def train_test_model(gb_reg_tuned, X_train, y_train, X_test, y_test):
 
     # apply quadratic transform to test set
     pr_test = PolynomialFeatures(degree = 2, include_bias = False)
+
+    X_test = X_test.drop(['salary', 'jobId', 'companyId',
+                        'jobType', 'degree', 'major',
+                        'industry'], axis = 1)
+                        
     x_polly_test = pr_test.fit_transform(X_test)
 
     # predict y_predicted using trained model
@@ -1941,7 +1951,7 @@ plt.ylabel('MSE')
 <img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_103_1.png" alt="linearly separable data">
 
 
-### Save model to CSV file
+### Save predictions and model to CSV file
 
 
 ```python
@@ -1954,4 +1964,13 @@ predicted_salary = y_predicted
 # save to CSV file
 
 predicted_salary.to_csv('/Users/User Name/Desktop/Predicted Salaries.csv')
+
+import pickle
+
+# Save the trained model
+
+GB_reg = GradientBoostingRegressor(n_estimators = 160, learning_rate = 0.1,
+                                   max_depth = 4, max_features = 10,
+                                   min_samples_split = 1000)
+GBReg_saved = pickle.dumps(GB_reg)
 ```
