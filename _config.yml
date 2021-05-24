@@ -1,7 +1,5 @@
 # Site Build Settings
 
-minimal_mistakes_skin: "air"
-
 # jekyll-paginate configuration
 paginate:            5
 
@@ -24,12 +22,9 @@ author:
   bio              : "Visions of a future"
   location         : "London, UK"
 
-logo:                "/assets/images/MM_Ali Taimur Shabbir2-02.png"
+logo: "/assets/images/MM_Ali Taimur Shabbir2-02.png"
 
 url: https://taimur-shabbir.github.io/
-
-search: true
-search_provider: lunr
 
 
 defaults:
@@ -38,7 +33,7 @@ defaults:
       path: ""
       type: posts
     values:
-      layout: single
+#      layout: single
       author_profile: true
       read_time: true
       comments: true
