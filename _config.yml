@@ -1,5 +1,7 @@
 # Site Build Settings
 
+minimal_mistakes_skin: "air"
+
 # jekyll-paginate configuration
 paginate:            5
 
@@ -16,10 +18,18 @@ sass:
 # Customise atom feed settings (this is where Jekyll-Feed gets configuration information)
 title:		           "Taimur Shabbir | Data Science Portfolio"
 description:	       "A place for my projects"
-author:              "Taimur Shabbir"
+author:
+  name             : "Taimur Shabbir"
+  avatar           : "/assets/images/avatar.png"
+  bio              : "Visions of a future"
+  location         : "London, UK"
+
 logo:                "/assets/images/MM_Ali Taimur Shabbir2-02.png"
 
 url: https://taimur-shabbir.github.io/
+
+search: true
+search_provider: lunr
 
 
 defaults:
@@ -48,10 +58,6 @@ defaults:
 
 
 
-theme:                minimal-mistakes-jekyll
 
-minimal_mistakes_skin: "air"
-
-search: true
 
 # author
