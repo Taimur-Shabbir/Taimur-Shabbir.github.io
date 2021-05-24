@@ -26,6 +26,8 @@ url: https://taimur-shabbir.github.io/
 
 logo: "/assets/images/MM_Ali Taimur Shabbir2-02.png"
 
+theme: minimal-mistakes-jekyll
+
 minimal_mistakes_skin: "air"
 
 defaults:
