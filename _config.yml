@@ -14,9 +14,9 @@ sass:
   style: :nested
 
 # Customise atom feed settings (this is where Jekyll-Feed gets configuration information)
-title:		           "Ali Taimur Shabbir | Data Science Portfolio"
+title:		           "Taimur Shabbir | Data Science Portfolio"
 description:	       "A place for my projects"
-author:              "Ali Taimur Shabbir"
+author:              "Taimur Shabbir"
 
 url: https://taimur-shabbir.github.io/
 
