@@ -20,15 +20,6 @@ author:              "Taimur Shabbir"
 
 url: https://taimur-shabbir.github.io/
 
-# RSS 2.0 can be used instead of Atom by uncommenting following two lines
-#feed:
-#  path: rss-feed.xml
-
-logo: "/assets/images/MM_Ali Taimur Shabbir2-02.png"
-
-theme: minimal-mistakes-jekyll
-
-minimal_mistakes_skin: "air"
 
 defaults:
   # _posts
@@ -36,15 +27,30 @@ defaults:
       path: ""
       type: posts
     values:
-      read_time: true
+      layout: single
       author_profile: true
+      read_time: true
+      comments: true
+      share: true
+      related: true
+
+# RSS 2.0 can be used instead of Atom by uncommenting following two lines
+#feed:
+#  path: rss-feed.xml
+
+#author:
+#  name     : "Taimur Shabbir"
+#  avatar   : "/assets/images/avatar.png"
+#  bio      : "Visions of a future"
+#  location : "London, UK"
+
+
+logo:                "/assets/images/MM_Ali Taimur Shabbir2-02.png"
+
+theme:                minimal-mistakes-jekyll
+
+minimal_mistakes_skin: "air"
 
 search: true
 
 # author
-
-author:
-  name     : "Taimur Shabbir"
-  avatar   : "/assets/images/avatar.png"
-  bio      : "Visions of a future"
-  location : "London, UK"
