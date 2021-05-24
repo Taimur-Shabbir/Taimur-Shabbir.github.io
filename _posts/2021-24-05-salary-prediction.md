@@ -291,7 +291,7 @@ plt.ylabel('Frequency')
     Text(0, 0.5, 'Frequency')
 
 
-
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_20_1.png" alt="linearly separable data">
 
 ![png](output_20_1.png)
 
