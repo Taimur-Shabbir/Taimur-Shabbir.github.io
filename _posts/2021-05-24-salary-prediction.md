@@ -1,6 +1,6 @@
 ---
 title: "End to End ML Project: Salary Prediction"
-date: 2021-24-05
+date: 2021-05-24
 tags: [Data Visualisation, Machine Learning, Feature Engineering]
 #header:
 image: j.jpg
@@ -293,8 +293,6 @@ plt.ylabel('Frequency')
 
 <img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_20_1.png" alt="linearly separable data">
 
-![png](output_20_1.png)
-
 
 **Investigate numerical variables 'yearsExperience' and 'milesFromMetropolis':**
 
@@ -326,8 +324,7 @@ ax2.set_ylabel('Miles')
 
 
 
-
-![png](output_22_1.png)
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_22_1.png" alt="linearly separable data">
 
 
 #### Investigate relationship between the above two interval variables and 'salary'
@@ -357,7 +354,7 @@ plt.ylabel('Salary (Arbitrary Units)')
 
 
 
-![png](output_24_1.png)
+
 
 
 
@@ -381,7 +378,7 @@ plt.ylabel('Salary (Arbitrary Units)')
 
 
 
-![png](output_25_1.png)
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_24_1.png" alt="linearly separable data">
 
 
 **Interpretation:**
@@ -457,7 +454,7 @@ ax1.tick_params(axis = 'both', which = 'major', labelsize = 12)
 ```
 
 
-![png](output_29_0.png)
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_29_0.png" alt="linearly separable data">
 
 
 **Interpretation**
@@ -502,7 +499,7 @@ plt.xlabel('Industry')
 
 
 
-![png](output_33_1.png)
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_33_1.png" alt="linearly separable data">
 
 
 **Interpretation**
@@ -534,7 +531,7 @@ plt.show()
 ```
 
 
-![png](output_37_0.png)
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_37_0.png" alt="linearly separable data">
 
 
 **Interpretation**
@@ -563,7 +560,7 @@ sns.heatmap(data_combined.corr(), annot = True, fmt = '.2f', cmap = 'mako')
 
 
 
-![png](output_40_1.png)
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_40_1.png" alt="linearly separable data">
 
 
 **Interpretation**
@@ -1688,7 +1685,7 @@ sns.heatmap(new_features_data.corr(), annot = True, fmt = '.2f', cmap = 'mako')
 
 
 
-![png](output_76_1.png)
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_76_1.png" alt="linearly separable data">
 
 
 Thankfully, our newly created features seem to have decent predictive power, as suggested by the correlation coefficients.
@@ -1940,7 +1937,7 @@ plt.ylabel('MSE')
 
 
 
-![png](output_103_1.png)
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_103_1.png" alt="linearly separable data">
 
 
 ### Save model to CSV file
