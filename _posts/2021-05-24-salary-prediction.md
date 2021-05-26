@@ -1901,7 +1901,7 @@ def train_test_model(gb_reg_tuned, X_train, y_train, X_test, y_test):
     X_test = X_test.drop(['salary', 'jobId', 'companyId',
                         'jobType', 'degree', 'major',
                         'industry'], axis = 1)
-                        
+
     x_polly_test = pr_test.fit_transform(X_test)
 
     # predict y_predicted using trained model
@@ -1969,8 +1969,9 @@ import pickle
 
 # Save the trained model
 
-GB_reg = GradientBoostingRegressor(n_estimators = 160, learning_rate = 0.1,
-                                   max_depth = 4, max_features = 10,
-                                   min_samples_split = 1000)
-GBReg_saved = pickle.dumps(GB_reg)
+poly_reg_model = LinearRegression()
+
+poly_reg_model.fit(x_polly, y_train)
+
+poly_reg_model_saved = pickle.dumps(poly_reg_model)
 ```
