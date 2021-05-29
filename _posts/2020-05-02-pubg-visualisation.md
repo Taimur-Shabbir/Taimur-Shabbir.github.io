@@ -23,7 +23,7 @@ The mechanic of a ‘safe zone’ ensures the match keeps progressing. A safe zo
 
 Every increment of the safe zone is a) randomly decided but b) a subset of the previous increment, so there is an element of controlled unpredictability that makes gameplay and strategy a little unique.
 
-## Data and Code
+## Data Source
 
 My thanks to user KP who scraped the original data and provided it on [Kaggle](https://www.kaggle.com/skihikingkevin/pubg-match-deaths#erangel.jpg). I’ll let them introduce the datasets:
 
@@ -32,7 +32,11 @@ My thanks to user KP who scraped the original data and provided it on [Kaggle](h
 In “deaths”, the files record every death that occurred within the 720k matches. That is, each row documents an event where a player has died in the match.
 In “aggregate”, each match’s meta information and player statistics are summarized (as provided by pubg). It includes various aggregate statistics such as player kills, damage, distance walked, etc as well as metadata on the match itself such as queue size, fpp/tpp, date, etc.”
 
-Since there is so much data, I’ve used tiny (1%) random samples in places for clearer visualisation. I grouped my findings into 3 buckets: 1) Survival and Placements, 2) Locations and 3) Weapons and Kills. Finally, all the feature engineering, wrangling and visualisation code can be found at my Github in a Jupyter Notebook.
+Since there is so much data, I’ve used tiny (1%) random samples in places for clearer visualisation. I grouped my findings into 3 buckets: 1) Survival and Placements, 2) Locations and 3) Weapons and Kills.
+
+## Where Can You Find All The Code?
+
+ All the feature engineering, wrangling and visualisation code can be found at my [Github](https://github.com/Taimur-Shabbir/Battle-Royale-Strategy-Visualisation-and-Analysis/blob/master/Notebook.ipynb).
 
 # Survival and Placements
 
