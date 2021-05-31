@@ -7,6 +7,8 @@ image: anne-nygard-OtqaCE_SEMI-unsplash.jpg
 #mathjax: "true"
 ---
 
+# Salary Predictions Based on Job Descriptions
+
 # Part 1 - Defining the Problem
 
 The business problem I am facing relates to predicting the salaries of a set of new job postings. I aim to train a machine learning model on data related to existing job postings and their salaries, and generalise that to accurately predict salaries for new postings.
@@ -18,13 +20,26 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+import pickle
+
+# import specific functions
+from math import sqrt
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import cross_val_score
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import GridSearchCV
+# from pandas import to_csv
+
+# import models
+from sklearn import linear_model
+from sklearn.svm import LinearSVR
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import GradientBoostingRegressor
+
 
 # change settings for plots
-#plt.rcParams.update({'font.size': 18, 'font.family': 'STIXGeneral', 'mathtext.fontset': 'stix'})
-#plt.rcParams.update(plt.rcParamsDefault)
 plt.style.use('fivethirtyeight')
-
-
 
 
 #from IPython.core.interactiveshell import InteractiveShell
@@ -33,6 +48,50 @@ plt.style.use('fivethirtyeight')
 
 __author__ = "Taimur Shabbir"
 __email__ = "alitaimurshabbir@hotmail.com"
+```
+
+
+```python
+# write plotting functions to be used later
+
+# boxplots
+
+def plot_boxplot(df, column_x, face_colour, colour,
+                 plot_title, y_label):
+
+    plt.boxplot(df[column_x], showfliers = True, patch_artist = True,
+                boxprops = dict(facecolor = face_colour, color = colour))
+
+    plt.title(plot_title)
+    plt.ylabel(y_label)
+
+    plt.tight_layout()
+
+
+# scatter plots
+
+def plot_scatter(df, column_X, column_y, alpha_value,
+                 colour, plot_title, x_label, y_label):
+
+    plt.scatter(df[column_X],
+                df[column_y],
+                alpha = alpha_value, color = colour)
+
+    plt.title(plot_title)
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+
+
+# bar plots
+
+def plot_bar(df, column_base, column_height, colour,
+             graph_title, label_x, label_y):
+
+    plt.bar(df[column_base], df[column_height], color = colour)
+
+    plt.title(graph_title)
+    plt.xlabel(label_x)
+    plt.ylabel(label_y)
 ```
 
 ## Part 2 - Discovering the Data
@@ -267,7 +326,7 @@ data_combined['major'].value_counts()
 
 
 
-There are no misspellings for the values in any of the columns investigated.
+There are no misspellings for the values in any of the columns investigated. Otherwise we would have seen multiple values that denote the same 'thing'. This would be obvious to humans ('physics' vs 'phisics') but not to a machine, which is why this step had to be performed
 
 ###  Exploring data (EDA)
 
@@ -291,40 +350,38 @@ plt.ylabel('Frequency')
     Text(0, 0.5, 'Frequency')
 
 
-<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_20_1.png" alt="linearly separable data">
+
+
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_21_1.png" alt="linearly separable data">
 
 
 **Investigate numerical variables 'yearsExperience' and 'milesFromMetropolis':**
 
 
 ```python
-fig, (ax1, ax2) = plt.subplots(nrows = 1, ncols = 2, figsize = (15, 8))
+plt.figure(figsize = (6, 7))
 
-ax1.boxplot(data_combined['yearsExperience'],
-            showfliers = True, patch_artist = True,
-            boxprops = dict(facecolor = 'cadetblue', color = 'cadetblue'))
+plot_boxplot(data_combined, 'yearsExperience', 'cadetblue',
+            'cadetblue', 'Distribution of Years of Experience',
+            'Years')
 
-ax1.set_title('Distribution of Years of Experience', fontsize = 16)
-ax1.set_ylabel('Years')
-
-
-
-ax2.boxplot(data_combined['milesFromMetropolis'],
-            showfliers = True, patch_artist = True,
-            boxprops = dict(facecolor = 'powderblue', color = 'powderblue'))
-
-ax2.set_title('Distribution of Miles From Metropolis', fontsize = 16)
-ax2.set_ylabel('Miles')
 ```
 
 
-
-
-    Text(0, 0.5, 'Miles')
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_23_0.png" alt="linearly separable data">
 
 
 
-<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_22_1.png" alt="linearly separable data">
+```python
+plt.figure(figsize = (6, 7))
+
+plot_boxplot(data_combined, 'milesFromMetropolis', 'powderblue',
+                'powderblue', 'Distribution of Miles From Metropolis',
+                'Distance (Miles)')
+```
+
+
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_24_0.png" alt="linearly separable data">
 
 
 #### Investigate relationship between the above two interval variables and 'salary'
@@ -334,53 +391,37 @@ ax2.set_ylabel('Miles')
 # take a small random sample of data for better visualisation
 
 small_sample_data = data_combined.sample(n = 3000, random_state = 42)
-
-plt.figure(figsize = (12, 8))
-
-plt.scatter(small_sample_data['milesFromMetropolis'],
-            small_sample_data['salary'], alpha = 0.5,
-            c = 'cadetblue')
-
-plt.title('Miles From Metropolis Versus Salary')
-plt.xlabel('Distance From Metropolis (Miles)')
-plt.ylabel('Salary (Arbitrary Units)')
 ```
 
 
+```python
+# Miles From Metropolis
+
+plt.figure(figsize = (10, 6))
+
+plot_scatter(small_sample_data, 'milesFromMetropolis','salary',
+             0.5, 'cadetblue', 'Miles From Metropolis Versus Salary',
+            'Distance From Metropolis (Miles)', 'Salary (Arbitrary Units)')
+```
 
 
-    Text(0, 0.5, 'Salary (Arbitrary Units)')
-
-
-
-
-
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_27_0.png" alt="linearly separable data">
 
 
 
 ```python
-plt.figure(figsize = (12, 8))
+# Years Of Work Experience
 
-plt.scatter(small_sample_data['yearsExperience'],
-            small_sample_data['salary'], alpha = 0.8,
-            c = 'powderblue')
+plt.figure(figsize = (10, 6))
 
-plt.title('Years of Experience Versus Salary')
-plt.xlabel('Work Experience (Years)')
-plt.ylabel('Salary (Arbitrary Units)')
+plot_scatter(small_sample_data, 'yearsExperience',
+            'salary', 0.8, 'powderblue', 'Years of Experience Versus Salary',
+            'Work Experience (Years)', 'Salary (Arbitrary Units)')
 ```
 
 
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_28_0.png" alt="linearly separable data">
 
-
-    Text(0, 0.5, 'Salary (Arbitrary Units)')
-
-
-
-
-<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_24_1.png" alt="linearly separable data">
-
-<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_25_1.png" alt="linearly separable data">
 
 **Interpretation:**
 
@@ -427,7 +468,7 @@ fig, (ax1, ax2, ax3) = plt.subplots(nrows = 1, ncols = 3, figsize = (20, 8), sha
 
 
 ax1.boxplot(auto_salary_df['salary'], patch_artist = True,
-            boxprops=dict(facecolor= 'firebrick', color='firebrick'))
+            boxprops=dict(facecolor= '#48B8D0', color='#48B8D0'))
 
 ax1.set_xlabel('Automobile Industry', fontsize = 16)
 ax1.set_ylabel('Salary (Arbitrary Units)', fontsize = 16)
@@ -436,14 +477,14 @@ ax1.set_ylim(0, 250)
 
 
 ax2.boxplot(oil_salary_df['salary'], patch_artist = True,
-            boxprops = dict(facecolor = 'black', color = 'black'))
+            boxprops = dict(facecolor = '#F5E5FC', color = '#F5E5FC'))
 
 ax2.set_xlabel('Oil Industry', fontsize = 16)
 ax2.tick_params(axis = 'both', which = 'major', labelsize = 12)
 
 
 ax3.boxplot(education_salary_df['salary'], patch_artist = True,
-            boxprops = dict(facecolor = 'darkgreen', color = 'navy'))
+            boxprops = dict(facecolor = '#5ABCB9', color = '#5ABCB9'))
 
 ax3.set_xlabel('Education Industry', fontsize = 16)
 ax3.tick_params(axis = 'both', which = 'major', labelsize = 12)
@@ -455,7 +496,7 @@ ax1.tick_params(axis = 'both', which = 'major', labelsize = 12)
 ```
 
 
-<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_29_0.png" alt="linearly separable data">
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_32_0.png" alt="linearly separable data">
 
 
 **Interpretation**
@@ -480,32 +521,29 @@ This visualisation suggests there may be a link between the type of industry one
 
 
 ```python
-industry_salary_df = data_combined.groupby('industry').mean().reset_index()
+industry_salary_df = data_combined.groupby('industry').mean().reset_index().sort_values('salary')
 ```
 
 
 ```python
 plt.figure(figsize = (12, 6))
-plt.bar(industry_salary_df['industry'], industry_salary_df['salary'], color = 'mediumpurple')
-plt.title('Average Salary Offered By Industry')
-plt.ylabel('Salary (Arbitrary Units)')
-plt.xlabel('Industry')
+
+plot_bar(industry_salary_df, 'industry', 'salary', '#4BC6B9',
+         'Average Salary Offered By Industry', 'Industry',
+         'Salary (Arbitrary Units)')
 ```
 
 
-
-
-    Text(0.5, 0, 'Industry')
-
-
-
-
-<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_33_1.png" alt="linearly separable data">
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_36_0.png" alt="linearly separable data">
 
 
 **Interpretation**
 
-- Oil and Finance offer the highest paying jobs on average. Education and Service conversely offer the lowest paying jobs on average
+- Oil and Finance offer the highest paying jobs on average. Education and Service conversely offer the lowest paying jobs on average. These findings generally conform to what one would theorise about without having seen any data.
+
+
+
+- The difference between the mean salary of an industry and the mean salary of the next highest-paying industry is fairly uniform for all industries. That is to say, average salary in the Service industry is slightly higher than in Education (let's call this difference 'A'). In turn, average salary in the Auto industry is slightly higher than in Service ('B'). A and B are of a similar magnitude and this is true for all industries
 
 ----
 
@@ -513,16 +551,27 @@ plt.xlabel('Industry')
 
 
 ```python
-jobType_df = data_combined.loc[:, ['jobType', 'salary']]
+jobType_df = data_combined.loc[:, ['jobType', 'salary']].sort_values('salary')
 ```
 
 
 ```python
-jobType_df.boxplot(by="jobType",
-                   column="salary",
+# write function to sort salary by median
+
+def boxplot_sorted(df, by, column, rot=0,
                    patch_artist = True,
-                   showfliers = True,
-                   figsize = (14, 8))
+                   showfliers = True):
+
+    df2 = pd.DataFrame({col:vals[column] for col, vals in df.groupby(by)})
+    meds = df2.median().sort_values()
+    return df2[meds.index].boxplot(rot=rot, return_type="axes")
+```
+
+
+```python
+plt.figure(figsize = (14, 8))
+
+boxplot_sorted(jobType_df, 'jobType', 'salary')
 
 plt.title('How Salary Differs With Job Seniority')
 plt.ylabel('Salary (Arbitrary Units)')
@@ -532,7 +581,7 @@ plt.show()
 ```
 
 
-<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_37_0.png" alt="linearly separable data">
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_41_0.png" alt="linearly separable data">
 
 
 **Interpretation**
@@ -540,101 +589,43 @@ plt.show()
 - The data suggests what one might expect; more senior roles usually pay higher salaries. The middle 50%, lowest paying and highest paying CEO, CFO and CTO jobs pay the most on average compared to other roles.
 
 
-- Janitor and Junior jobs pay the least
+- Janitor and Junior jobs pay the least. This again conforms to common sense; these roles typically involve the least amount of leadership and decision-making, two highly important and sought after skills in the job market
 
 
-- The distribution of salary is fairly well correlated with the seniority of the job overall
+- The distribution of salary is fairly well correlated with the seniority of the job overall. At the same time, however, we see that there is not much of a meaningful difference in average salary when we look at C-Suite jobs (CFO, CTO and CEO). The differences in mean salary between roles as split by seniority are most prominent in the more junior roles
 
-**Correlations between integer variables**
+**Correlations between variables**
 
-
-```python
-fig, axes = plt.subplots(1, 1, figsize = (12, 10))
-sns.heatmap(data_combined.corr(), annot = True, fmt = '.2f', cmap = 'mako')
-```
-
-
-
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f92fc507090>
-
-
-
-
-<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_40_1.png" alt="linearly separable data">
-
-
-**Interpretation**
-
-- As suggested by our initial scatterplots, 'milesFromMetropolis' has a weak, negative correlation with 'salary' while 'yearsExperience' has a weak, positive correlation with 'salary', with coefficients of -0.3 and 0.38 respectively. This suggests both of these variables may have some predictive power
-
-###  Establishing a baseline
-
-For a baseline model, I will use the average salary per industry as the prediction.
-
-I will then calculate RMSE to find a benchmark to improve upon.
+To find correlations between the categorical variables we have and salary, a good approach to take is simply to find the mean salary for each value of a categorical variable and compare these values with salary to find their correlation. Let us do that now.
 
 
 ```python
-industry_salary_mean = data_combined.groupby('industry')['salary'].mean()
+df_corr = data_combined.copy(deep=True)
 ```
 
 
 ```python
-# initialise variables
-
-auto_salary = industry_salary_mean[0]
-education_salary = industry_salary_mean[1]
-finance_salary = industry_salary_mean[2]
-health_salary = industry_salary_mean[3]
-oil_salary = industry_salary_mean[4]
-service_salary = industry_salary_mean[5]
-web_salary = industry_salary_mean[6]
+df_corr[['companyId','jobType','degree',
+         'major','industry']] = data_combined[['companyId','jobType',
+                                               'degree','major','industry']].astype('category')
 ```
 
 
 ```python
-# create new Baseline Prediction column and fill with NaNs, to be replaced shortly
-
-data_combined['Baseline Prediction'] = np.nan
+df_columns_corr=['companyId','jobType','degree','major','industry']
+def lab_encoder(columns):
+    for column in columns:
+        df_corr[column]=df_corr.groupby(column).transform('mean')['salary']
 ```
 
 
 ```python
-# replace each NaN with the average salary of the industry for the relevant row
-
-data_combined['Baseline Prediction'] = np.where(
-                                      (data_combined['industry'] == 'AUTO'),
-                                       auto_salary, data_combined['Baseline Prediction'])
-
-data_combined['Baseline Prediction'] = np.where(
-                                      (data_combined['industry'] == 'EDUCATION'),
-                                       education_salary, data_combined['Baseline Prediction'])
-
-data_combined['Baseline Prediction'] = np.where(
-                                      (data_combined['industry'] == 'FINANCE'),
-                                       finance_salary, data_combined['Baseline Prediction'])
-
-data_combined['Baseline Prediction'] = np.where(
-                                      (data_combined['industry'] == 'HEALTH'),
-                                       health_salary, data_combined['Baseline Prediction'])
-
-data_combined['Baseline Prediction'] = np.where(
-                                      (data_combined['industry'] == 'OIL'),
-                                       oil_salary, data_combined['Baseline Prediction'])
-
-data_combined['Baseline Prediction'] = np.where(
-                                      (data_combined['industry'] == 'SERVICE'),
-                                       service_salary, data_combined['Baseline Prediction'])
-
-data_combined['Baseline Prediction'] = np.where(
-                                      (data_combined['industry'] == 'WEB'),
-                                       web_salary, data_combined['Baseline Prediction'])
+lab_encoder(df_columns_corr)
 ```
 
 
 ```python
-data_combined
+df_corr
 ```
 
 
@@ -667,77 +658,70 @@ data_combined
       <th>yearsExperience</th>
       <th>milesFromMetropolis</th>
       <th>salary</th>
-      <th>Baseline Prediction</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td>0</td>
       <td>JOB1362684407687</td>
-      <td>COMP37</td>
-      <td>CFO</td>
-      <td>MASTERS</td>
-      <td>MATH</td>
-      <td>HEALTH</td>
+      <td>115.345049</td>
+      <td>135.458547</td>
+      <td>130.505647</td>
+      <td>133.322042</td>
+      <td>115.735540</td>
       <td>10</td>
       <td>83</td>
       <td>130</td>
-      <td>115.735540</td>
     </tr>
     <tr>
       <td>1</td>
       <td>JOB1362684407688</td>
-      <td>COMP19</td>
-      <td>CEO</td>
-      <td>HIGH_SCHOOL</td>
-      <td>NONE</td>
-      <td>WEB</td>
+      <td>115.756548</td>
+      <td>145.311425</td>
+      <td>101.921085</td>
+      <td>102.583864</td>
+      <td>121.645362</td>
       <td>3</td>
       <td>73</td>
       <td>101</td>
-      <td>121.645362</td>
     </tr>
     <tr>
       <td>2</td>
       <td>JOB1362684407689</td>
-      <td>COMP52</td>
-      <td>VICE_PRESIDENT</td>
-      <td>DOCTORAL</td>
-      <td>PHYSICS</td>
-      <td>HEALTH</td>
+      <td>116.224249</td>
+      <td>125.368630</td>
+      <td>135.490979</td>
+      <td>130.372436</td>
+      <td>115.735540</td>
       <td>10</td>
       <td>38</td>
       <td>137</td>
-      <td>115.735540</td>
     </tr>
     <tr>
       <td>3</td>
       <td>JOB1362684407690</td>
-      <td>COMP38</td>
-      <td>MANAGER</td>
-      <td>DOCTORAL</td>
-      <td>CHEMISTRY</td>
-      <td>AUTO</td>
+      <td>116.199380</td>
+      <td>115.368518</td>
+      <td>135.490979</td>
+      <td>129.072085</td>
+      <td>109.435222</td>
       <td>8</td>
       <td>17</td>
       <td>142</td>
-      <td>109.435222</td>
     </tr>
     <tr>
       <td>4</td>
       <td>JOB1362684407691</td>
-      <td>COMP7</td>
-      <td>VICE_PRESIDENT</td>
-      <td>BACHELORS</td>
-      <td>PHYSICS</td>
-      <td>FINANCE</td>
+      <td>115.888501</td>
+      <td>125.368630</td>
+      <td>125.454663</td>
+      <td>130.372436</td>
+      <td>130.747659</td>
       <td>8</td>
       <td>16</td>
       <td>163</td>
-      <td>130.747659</td>
     </tr>
     <tr>
-      <td>...</td>
       <td>...</td>
       <td>...</td>
       <td>...</td>
@@ -752,74 +736,108 @@ data_combined
     <tr>
       <td>999995</td>
       <td>JOB1362685407682</td>
-      <td>COMP56</td>
-      <td>VICE_PRESIDENT</td>
-      <td>BACHELORS</td>
-      <td>CHEMISTRY</td>
-      <td>HEALTH</td>
+      <td>116.134865</td>
+      <td>125.368630</td>
+      <td>125.454663</td>
+      <td>129.072085</td>
+      <td>115.735540</td>
       <td>19</td>
       <td>94</td>
       <td>88</td>
-      <td>115.735540</td>
     </tr>
     <tr>
       <td>999996</td>
       <td>JOB1362685407683</td>
-      <td>COMP24</td>
-      <td>CTO</td>
-      <td>HIGH_SCHOOL</td>
-      <td>NONE</td>
-      <td>FINANCE</td>
+      <td>116.176489</td>
+      <td>135.481067</td>
+      <td>101.921085</td>
+      <td>102.583864</td>
+      <td>130.747659</td>
       <td>12</td>
       <td>35</td>
       <td>160</td>
-      <td>130.747659</td>
     </tr>
     <tr>
       <td>999997</td>
       <td>JOB1362685407684</td>
-      <td>COMP23</td>
-      <td>JUNIOR</td>
-      <td>HIGH_SCHOOL</td>
-      <td>NONE</td>
-      <td>EDUCATION</td>
+      <td>116.261277</td>
+      <td>95.333087</td>
+      <td>101.921085</td>
+      <td>102.583864</td>
+      <td>99.448386</td>
       <td>16</td>
       <td>81</td>
       <td>64</td>
-      <td>99.448386</td>
     </tr>
     <tr>
       <td>999998</td>
       <td>JOB1362685407685</td>
-      <td>COMP3</td>
-      <td>CFO</td>
-      <td>MASTERS</td>
-      <td>NONE</td>
-      <td>HEALTH</td>
+      <td>116.199339</td>
+      <td>135.458547</td>
+      <td>130.505647</td>
+      <td>102.583864</td>
+      <td>115.735540</td>
       <td>6</td>
       <td>5</td>
       <td>149</td>
-      <td>115.735540</td>
     </tr>
     <tr>
       <td>999999</td>
       <td>JOB1362685407686</td>
-      <td>COMP59</td>
-      <td>JUNIOR</td>
-      <td>BACHELORS</td>
-      <td>NONE</td>
-      <td>EDUCATION</td>
+      <td>115.870161</td>
+      <td>95.333087</td>
+      <td>125.454663</td>
+      <td>102.583864</td>
+      <td>99.448386</td>
       <td>20</td>
       <td>11</td>
       <td>88</td>
-      <td>99.448386</td>
     </tr>
   </tbody>
 </table>
-<p>999995 rows × 10 columns</p>
+<p>999995 rows × 9 columns</p>
 </div>
 
 
+
+
+```python
+plt.figure(figsize = (12, 10))
+
+sns.heatmap(df_corr.corr(), annot=True, fmt = '.2f', cmap = 'mako')
+```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x7ffd5f585ed0>
+
+
+
+
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_49_1.png" alt="linearly separable data">
+
+
+**Interpretation**
+
+- **Interval variables**: As suggested by our initial scatterplots, 'milesFromMetropolis' has a weak, negative correlation with 'salary' while 'yearsExperience' has a weak, positive correlation with 'salary', with coefficients of -0.3 and 0.38 respectively
+
+
+- **Categorical variables**: JobType has the strongest (positive) correlation with salary out of all features, at 0.6. It is followed by degree, major and industry with coefficients of 0.4, 0.38 and 0.3, respectively. It is interesting that out of the 4 categorical variables, the 2 that are ordinal have stronger correlations than the two that are nominal. This will be explained further when we arrive at encoding these these categorical features, which is a prerequisite to use them in an ML algorithm
+
+
+- These statistics suggest that all of our features (with the exception of Company ID) have predictive power, some more so than others.
+
+###  Establishing a baseline
+
+For a baseline model, I will use the average salary per industry as the prediction.
+
+I will then calculate RMSE to find a benchmark to improve upon.
+
+
+```python
+data_combined['Baseline Prediction'] = data_combined.groupby('industry')['salary'].transform('mean')
+```
 
 
 ```python
@@ -838,8 +856,6 @@ y_predicted = data_combined['Baseline Prediction']
 ```python
 # calculate MSE
 
-from sklearn.metrics import mean_squared_error
-from math import sqrt
 rmse = sqrt(mean_squared_error(y_train, y_predicted))
 
 print('The baseline model RMSE is {}'.format(rmse))
@@ -1605,63 +1621,7 @@ data_combined.tail()
 
 
 ```python
-job_mean_salary = data_combined.groupby('jobType')['salary'].mean()
-
-job_mean_salary
-
-# intialise variables
-
-ceo_salary = job_mean_salary[0]
-cfo_salary = job_mean_salary[1]
-cto_salary = job_mean_salary[2]
-janitor_salary = job_mean_salary[3]
-junior_salary = job_mean_salary[4]
-manager_salary = job_mean_salary[5]
-senior_salary = job_mean_salary[6]
-vp_salary = job_mean_salary[7]
-
-```
-
-
-```python
-data_combined['Mean Salary Per Job Type'] = np.NaN
-```
-
-
-```python
-# replace each NaN with the average salary of the industry for the relevant row
-
-data_combined['Mean Salary Per Job Type'] = np.where(
-                                      (data_combined['jobType'] == 'CEO'),
-                                       ceo_salary, data_combined['Mean Salary Per Job Type'])
-
-data_combined['Mean Salary Per Job Type'] = np.where(
-                                      (data_combined['jobType'] == 'CFO'),
-                                       cfo_salary, data_combined['Mean Salary Per Job Type'])
-
-data_combined['Mean Salary Per Job Type'] = np.where(
-                                      (data_combined['jobType'] == 'CTO'),
-                                       cto_salary, data_combined['Mean Salary Per Job Type'])
-
-data_combined['Mean Salary Per Job Type'] = np.where(
-                                      (data_combined['jobType'] == 'JANITOR'),
-                                       janitor_salary, data_combined['Mean Salary Per Job Type'])
-
-data_combined['Mean Salary Per Job Type'] = np.where(
-                                      (data_combined['jobType'] == 'JUNIOR'),
-                                       junior_salary, data_combined['Mean Salary Per Job Type'])
-
-data_combined['Mean Salary Per Job Type'] = np.where(
-                                      (data_combined['jobType'] == 'MANAGER'),
-                                       manager_salary, data_combined['Mean Salary Per Job Type'])
-
-data_combined['Mean Salary Per Job Type'] = np.where(
-                                      (data_combined['jobType'] == 'SENIOR'),
-                                       senior_salary, data_combined['Mean Salary Per Job Type'])
-
-data_combined['Mean Salary Per Job Type'] = np.where(
-                                      (data_combined['jobType'] == 'VICE_PRESIDENT'),
-                                       vp_salary, data_combined['Mean Salary Per Job Type'])
+data_combined['Mean Salary Per Job Type'] = data_combined.groupby('jobType')['salary'].transform('mean')
 ```
 
 ### Checking for correlations between selected newly engineered features and 'salary'
@@ -1681,12 +1641,12 @@ sns.heatmap(new_features_data.corr(), annot = True, fmt = '.2f', cmap = 'mako')
 
 
 
-    <matplotlib.axes._subplots.AxesSubplot at 0x7f92ff38bfd0>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7ffd93eb5990>
 
 
 
 
-<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_76_1.png" alt="linearly separable data">
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_79_1.png" alt="linearly separable data">
 
 
 Thankfully, our newly created features seem to have decent predictive power, as suggested by the correlation coefficients.
@@ -1714,13 +1674,6 @@ y_train = data_combined['salary']
 
 
 ```python
-# import selected models
-
-from sklearn import linear_model
-from sklearn.svm import LinearSVR
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import cross_val_score
 
 # initialise models
 lr = linear_model.LinearRegression()
@@ -1753,7 +1706,7 @@ cross_val_mse(linear_model.LinearRegression(), X_train, y_train)
 ```python
 # create polynomial features with degree = 2
 
-from sklearn.preprocessing import PolynomialFeatures
+
 
 pr = PolynomialFeatures(degree = 2, include_bias = False)
 
@@ -1768,7 +1721,7 @@ cross_val_mse(lr, x_polly, y_train)
 ```python
 # scale data as SVM is sensitive to different scales
 
-from sklearn.preprocessing import StandardScaler
+
 scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 
@@ -1796,7 +1749,7 @@ y_train_sample_500k = sample_data['salary']
 
 
 ```python
-from sklearn.ensemble import GradientBoostingRegressor
+
 
 gb_reg = GradientBoostingRegressor()
 
@@ -1828,8 +1781,6 @@ y_train_sample_10k = sample_data['salary']
 
 
 ```python
-from sklearn.model_selection import GridSearchCV
-
 # initialise parameters
 param_grid = [ {'max_features': [5, 10, 15], 'min_samples_split': [10, 100, 1000],
                'learning_rate':[0.5, 1, 1.5], 'max_depth':[4, 8, 12]}]
@@ -1854,13 +1805,14 @@ gb_grid_scores['mean_test_score']
 ```python
 #cross validation score of tuned Gradient Boosting Regressor
 
+
 gb_reg_2 = GradientBoostingRegressor(n_estimators = 160, learning_rate = 0.1,
                                      max_depth = 4, max_features = 10, min_samples_split = 1000)
 
 cross_val_mse(gb_reg_2, X_train_sample_500k, y_train_sample_500k)
 ```
 
-    The mean cross-validation score is -358.5245795133168
+    The mean cross-validation score is -358.93489018440266
 
 
 ### Selecting the best model
@@ -1878,34 +1830,28 @@ The best model is polynomial regression with degree = 2. It achieved an MSE of 3
 
 def train_test_model(gb_reg_tuned, X_train, y_train, X_test, y_test):
 
-    # apply quadratic transform to train set
-    pr_train = PolynomialFeatures(degree = 2, include_bias = False)
 
     X_train = X_train.drop(['salary', 'jobId', 'companyId',
                         'jobType', 'degree', 'major',
                         'industry'], axis = 1)
 
-    x_polly_train = pr_train.fit_transform(X_train)
 
     # initialise tuned model
     gb_reg_tuned = GradientBoostingRegressor(n_estimators = 160, learning_rate = 0.1,
                                          max_depth = 4, max_features = 10,
                                          min_samples_split = 1000)
 
-    # fit model on X_polly_train and y_train
-    gb_reg_tuned.fit(x_polly_train, y_train)
+    # fit model on X_train and y_train
+    gb_reg_tuned.fit(X_train, y_train)
 
-    # apply quadratic transform to test set
-    pr_test = PolynomialFeatures(degree = 2, include_bias = False)
 
     X_test = X_test.drop(['salary', 'jobId', 'companyId',
                         'jobType', 'degree', 'major',
                         'industry'], axis = 1)
 
-    x_polly_test = pr_test.fit_transform(X_test)
 
     # predict y_predicted using trained model
-    y_predicted = gb_reg_tuned.predict(x_polly_test)
+    y_predicted = gb_reg_tuned.predict(X_test)
 
     # test model and print mse
     mse = metrics.mean_squared_error(y_test, y_predicted)
@@ -1918,6 +1864,7 @@ def train_test_model(gb_reg_tuned, X_train, y_train, X_test, y_test):
 
 ```python
 # create dataframe
+
 mse_performance_data = pd.DataFrame(columns = ['Model', 'MSE'])
 mse_performance_data['Model'] = pd.Series(['Linear Regression',
                                            'Polynomial Regression (n = 2)',
@@ -1926,6 +1873,8 @@ mse_performance_data['Model'] = pd.Series(['Linear Regression',
                                            'GB Regressor (tuned)'])
 mse_performance_data['MSE'] = pd.Series([386.64, 354.13, 387.89, 689.75, 380.30,
                                          358.43])
+
+mse_performance_data.sort_values('MSE', ascending = False, inplace = True)
 ```
 
 
@@ -1934,29 +1883,19 @@ mse_performance_data['MSE'] = pd.Series([386.64, 354.13, 387.89, 689.75, 380.30,
 
 plt.figure(figsize = (20, 8))
 
-plt.bar(mse_performance_data['Model'], mse_performance_data['MSE'], color = 'teal')
-plt.title('5-fold MSE for 5 different models')
-plt.xlabel('Model Name')
-plt.ylabel('MSE')
+plot_bar(mse_performance_data, 'Model', 'MSE', '#4E937A',
+         '5-fold MSE for 5 different models', 'Model Name',
+         'MSE')
 ```
 
 
-
-
-    Text(0, 0.5, 'MSE')
-
-
-
-
-<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_103_1.png" alt="linearly separable data">
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_106_0.png" alt="linearly separable data">
 
 
 ### Save predictions and model to CSV file
 
 
 ```python
-from pandas import to_csv
-
 # save predictions
 
 predicted_salary = y_predicted
@@ -1965,13 +1904,17 @@ predicted_salary = y_predicted
 
 predicted_salary.to_csv('/Users/User Name/Desktop/Predicted Salaries.csv')
 
-import pickle
+# save model
+
+
 
 # Save the trained model
 
-poly_reg_model = LinearRegression()
+gb_reg_tuned = GradientBoostingRegressor(n_estimators = 160, learning_rate = 0.1,
+                                         max_depth = 4, max_features = 10,
+                                         min_samples_split = 1000)
 
-poly_reg_model.fit(x_polly, y_train)
+gb_reg_tuned.fit(X_train, y_train)
 
-poly_reg_model_saved = pickle.dumps(poly_reg_model)
+gb_reg_tuned_saved = pickle.dumps(gb_reg_tuned)
 ```
