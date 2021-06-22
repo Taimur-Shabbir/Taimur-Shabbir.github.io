@@ -1742,51 +1742,8 @@ print('Precision -', precision_score(y_train, y_train_pred_80_recall))
     Precision - 0.6865464632454924
 
 
-# 8. Deploy
 
-## Automate Pipeline
-
-
-```python
-#write script that trains model on entire training set, saves model to disk,
-#and scores the "test" dataset
-
-def train_test_model(model, X_train, y_train, X_test, y_test):
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y,
-                                                        test_size = 0.3,
-                                                        random_state = 42)
-
-    X_train = X_train.drop(['Country', 'state',
-                            'no_employees', 'treatment'], axis = 1)
-
-    X_test = X_test.drop(['Country', 'state',
-                          'no_employees', 'treatment'], axis = 1)
-
-
-    # initialise tuned model
-    model = BernoulliNB(alpha=0.05, binarize = 0.0,
-                          class_prior = None, fit_prior = True)
-
-
-    # find scores by fitting model on X_train and y_train
-    y_probs = cross_val_predict(model, X_train, y_train, cv=5, method="predict_proba")
-    y_scores = y_probs[:, 1] # choose positive class scores
-
-    ### Here is where I need some help. In my analysis, I chose a threshold of 0.4 from
-    ### which I got a recall score of 80%. However, I could only have done this using a
-    ### PR curve. I don't know how to find an appropriate threshold within this function without
-    ### physically seeing the PR curve plotted for the new/test data first. Could you help me here
-    ### please?
-
-    # test model and print recall and precision
-    #recall = recall_score(y_test, y_predicted)
-    #precision = precision_score(y_test, y_predicted)
-
-    #print('The recall score on the test set is {} while the precision score is {}'.format(recall, precision))
-```
-
-# 9. Save Model
+# 8. Save Model
 
 
 ```python
@@ -1853,15 +1810,3 @@ Recall is often paired with Precision and it answers the question "how many peop
 $$ \frac{TP}{TP+FN}$$
 
 Where precision only investigates the correct positive predictions (TP) out of all positive predictions, recall provides an indication of missed positive predictions. This means that Recall is about how many people who sought treatment we can accurately detect, compared to the ground truth of the actual number of people that sought treatment.
-
-
-
-
-```python
-
-```
-
-
-```python
-
-```
