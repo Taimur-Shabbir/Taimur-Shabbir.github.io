@@ -7,47 +7,48 @@ image: anne-nygard-OtqaCE_SEMI-unsplash.jpg
 #mathjax: "true"
 ---
 
+
 # Salary Predictions Based on Job Descriptions
 
-# Part 1 - Defining the Problem
+# Part 1 - Defining the Problem and its Business Value
 
-The business problem I am facing relates to predicting the salaries of a set of new job postings. I aim to train a machine learning model on data related to existing job postings and their salaries, and generalise that to accurately predict salaries for new postings.
+The business problem I am facing relates to analysing a current set of job postings, then generalising a model to  predict the salaries of a set of new job postings. The business value in this problem can be manifold and could relate to a variety of different interested parties:
+
+- **For a company**: Accurate predictions may allow a company to offer 'fair' salaries to potential applicants. By 'fair', we mean salaries that are similar to those in existing roles, account for the variance in each role in terms of industry, experience required and so on
+
+
+
+- **For government and research institutions**:  to study the state of the job market in terms of salaries offered. This would provide information on key drivers of the job market in particular and the economy in general. For example, if jobs requiring a degree in Engineering consistently offer higher salaries, then this would be an indication that such roles are an important building block of the economy, and thus the government may consider promotion of educational initiatives that encourage people to pursue engineering degrees
+
+
+
+- **For job applicants**: An accurate predictor would allow job applicants to assess if they are being offered a 'fair' salary given their skills and experience. This is much the same as the first entry for a 'company', except from the opposite point of view
 
 
 ```python
 # import libraries
 import pandas as pd
-import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import pickle
 
-# import specific functions
+# import specific functions and classes
 from math import sqrt
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import GridSearchCV
-# from pandas import to_csv
+from sklearn.pipeline import Pipeline
 
 # import models
 from sklearn import linear_model
 from sklearn.svm import LinearSVR
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 
 
 # change settings for plots
 plt.style.use('fivethirtyeight')
-
-
-#from IPython.core.interactiveshell import InteractiveShell
-#InteractiveShell.ast_node_interactivity = "all"
-
-
-__author__ = "Taimur Shabbir"
-__email__ = "alitaimurshabbir@hotmail.com"
 ```
 
 
@@ -59,12 +60,11 @@ __email__ = "alitaimurshabbir@hotmail.com"
 def plot_boxplot(df, column_x, face_colour, colour,
                  plot_title, y_label):
 
-    plt.boxplot(df[column_x], showfliers = True, patch_artist = True,
-                boxprops = dict(facecolor = face_colour, color = colour))
+    plt.boxplot(df[column_x], showfliers=True, patch_artist=True,
+                boxprops=dict(facecolor=face_colour, color=colour))
 
     plt.title(plot_title)
     plt.ylabel(y_label)
-
     plt.tight_layout()
 
 
@@ -75,7 +75,7 @@ def plot_scatter(df, column_X, column_y, alpha_value,
 
     plt.scatter(df[column_X],
                 df[column_y],
-                alpha = alpha_value, color = colour)
+                alpha=alpha_value, color=colour)
 
     plt.title(plot_title)
     plt.xlabel(x_label)
@@ -86,9 +86,7 @@ def plot_scatter(df, column_X, column_y, alpha_value,
 
 def plot_bar(df, column_base, column_height, colour,
              graph_title, label_x, label_y):
-
-    plt.bar(df[column_base], df[column_height], color = colour)
-
+    plt.bar(df[column_base], df[column_height], color=colour)
     plt.title(graph_title)
     plt.xlabel(label_x)
     plt.ylabel(label_y)
@@ -100,14 +98,15 @@ def plot_bar(df, column_base, column_height, colour,
 
 
 ```python
-data_features = pd.read_csv('/Users/alitaimurshabbir/Desktop/salary-prediction/data/train_features.csv')
-data_outcomes = pd.read_csv('/Users/alitaimurshabbir/Desktop/salary-prediction/data/train_salaries.csv')
-data_combined = pd.merge(data_features, data_outcomes, on = 'jobId')
+data_features = pd.read_csv('path to data/train_features.csv')
+data_outcomes = pd.read_csv('path to data/train_salaries.csv')
+data_combined = pd.merge(data_features, data_outcomes, on='jobId')
 ```
 
 
 ```python
-# checking whether 'merge' was executed successfully by examining number of rows
+# checking whether 'merge' was executed successfully
+# by examining number of rows
 
 print(len(data_features))
 print(len(data_outcomes))
@@ -123,7 +122,8 @@ print(len(data_combined))
 
 
 ```python
-# As a first step, I will find what data is missing. We see that no data is missing:
+# As a first step, I will find what data is missing
+# We see that no data is missing:
 
 data_combined.isnull().sum()
 ```
@@ -152,7 +152,8 @@ data_combined.describe()
 
 data_combined[data_combined['salary'] == 0]
 
-# There are a few records for salaries with a value of 0. These must be incorrect
+# There are a few records for salaries with a value of 0
+# These must be incorrect
 ```
 
 
@@ -263,7 +264,8 @@ The best way to deal with this missing data is to drop the relevant rows, for tw
 
 
 ```python
-data_combined = data_combined.drop(data_combined[data_combined.salary == 0].index)
+data_combined = data_combined.drop(
+                data_combined[data_combined.salary == 0].index)
 ```
 
 Next I want to check the unique values for a few columns with the 'object' data type. This is to see, for example, if there are misspellings for entries in the 'jobType' column.
@@ -334,11 +336,11 @@ There are no misspellings for the values in any of the columns investigated. Oth
 
 
 ```python
-plt.figure(figsize=(12,6))
+plt.figure(figsize=(12, 6))
 
-sns.distplot(data_combined['salary'], kde=False, bins=40, color = 'teal')
+sns.distplot(data_combined['salary'], kde=False, bins=40, color='teal')
 
-plt.title('Distribution of Salary in Arbitrary Units', fontsize = 18)
+plt.title('Distribution of Salary in Arbitrary Units', fontsize=18)
 plt.xlabel('Salary (Arbitrary Units)')
 plt.ylabel('Frequency')
 
@@ -351,7 +353,6 @@ plt.ylabel('Frequency')
 
 
 
-
 <img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_21_1.png" alt="linearly separable data">
 
 
@@ -359,27 +360,31 @@ plt.ylabel('Frequency')
 
 
 ```python
-plt.figure(figsize = (6, 7))
+plt.figure(figsize=(6, 7))
 
-plot_boxplot(data_combined, 'yearsExperience', 'cadetblue',
-            'cadetblue', 'Distribution of Years of Experience',
-            'Years')
+plot_boxplot(data_combined,
+             'yearsExperience',
+             'cadetblue',
+             'cadetblue',
+             'Distribution of Years of Experience',
+             'Years')
 
 ```
-
 
 <img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_23_0.png" alt="linearly separable data">
 
 
 
 ```python
-plt.figure(figsize = (6, 7))
+plt.figure(figsize=(6, 7))
 
-plot_boxplot(data_combined, 'milesFromMetropolis', 'powderblue',
-                'powderblue', 'Distribution of Miles From Metropolis',
-                'Distance (Miles)')
+plot_boxplot(data_combined,
+             'milesFromMetropolis',
+             'powderblue',
+             'powderblue',
+             'Distribution of Miles From Metropolis',
+             'Distance (Miles)')
 ```
-
 
 <img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_24_0.png" alt="linearly separable data">
 
@@ -390,35 +395,33 @@ plot_boxplot(data_combined, 'milesFromMetropolis', 'powderblue',
 ```python
 # take a small random sample of data for better visualisation
 
-small_sample_data = data_combined.sample(n = 3000, random_state = 42)
+small_sample_data = data_combined.sample(n=3000, random_state=42)
 ```
 
 
 ```python
 # Miles From Metropolis
 
-plt.figure(figsize = (10, 6))
+plt.figure(figsize=(10, 6))
 
-plot_scatter(small_sample_data, 'milesFromMetropolis','salary',
+plot_scatter(small_sample_data, 'milesFromMetropolis', 'salary',
              0.5, 'cadetblue', 'Miles From Metropolis Versus Salary',
-            'Distance From Metropolis (Miles)', 'Salary (Arbitrary Units)')
+             'Distance From Metropolis (Miles)', 'Salary (Arbitrary Units)')
 ```
 
-
 <img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_27_0.png" alt="linearly separable data">
-
 
 
 ```python
 # Years Of Work Experience
 
-plt.figure(figsize = (10, 6))
+plt.figure(figsize=(10, 6))
 
 plot_scatter(small_sample_data, 'yearsExperience',
-            'salary', 0.8, 'powderblue', 'Years of Experience Versus Salary',
-            'Work Experience (Years)', 'Salary (Arbitrary Units)')
+             'salary', 0.8, 'powderblue',
+             'Years of Experience Versus Salary',
+             'Work Experience (Years)', 'Salary (Arbitrary Units)')
 ```
-
 
 <img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_28_0.png" alt="linearly separable data">
 
@@ -456,45 +459,47 @@ auto_salary_df = data_combined.loc[(data_combined['industry'] == 'AUTO')]
 
 oil_salary_df = data_combined.loc[(data_combined['industry'] == 'OIL')]
 
-education_salary_df = data_combined.loc[(data_combined['industry'] == 'EDUCATION')]
+education_salary_df = data_combined.loc[
+                      (data_combined['industry'] == 'EDUCATION')]
 ```
 
 
 ```python
 # create plots
 
-fig, (ax1, ax2, ax3) = plt.subplots(nrows = 1, ncols = 3, figsize = (20, 8), sharey = True)
+fig, (ax1, ax2, ax3) = plt.subplots(
+                       nrows=1, ncols=3, figsize=(20, 8),
+                       sharey=True)
 
+ax1.boxplot(auto_salary_df['salary'], patch_artist=True,
+            boxprops=dict(facecolor='#48B8D0', color='#48B8D0'))
 
-
-ax1.boxplot(auto_salary_df['salary'], patch_artist = True,
-            boxprops=dict(facecolor= '#48B8D0', color='#48B8D0'))
-
-ax1.set_xlabel('Automobile Industry', fontsize = 16)
-ax1.set_ylabel('Salary (Arbitrary Units)', fontsize = 16)
-ax1.tick_params(axis = 'both', which = 'major', labelsize = 12)
+ax1.set_xlabel('Automobile Industry', fontsize=16)
+ax1.set_ylabel('Salary (Arbitrary Units)', fontsize=16)
+ax1.tick_params(axis='both', which='major', labelsize=12)
 ax1.set_ylim(0, 250)
 
 
-ax2.boxplot(oil_salary_df['salary'], patch_artist = True,
-            boxprops = dict(facecolor = '#F5E5FC', color = '#F5E5FC'))
+ax2.boxplot(oil_salary_df['salary'], patch_artist=True,
+            boxprops=dict(facecolor='#F5E5FC', color='#F5E5FC'))
 
-ax2.set_xlabel('Oil Industry', fontsize = 16)
-ax2.tick_params(axis = 'both', which = 'major', labelsize = 12)
-
-
-ax3.boxplot(education_salary_df['salary'], patch_artist = True,
-            boxprops = dict(facecolor = '#5ABCB9', color = '#5ABCB9'))
-
-ax3.set_xlabel('Education Industry', fontsize = 16)
-ax3.tick_params(axis = 'both', which = 'major', labelsize = 12)
+ax2.set_xlabel('Oil Industry', fontsize=16)
+ax2.tick_params(axis='both', which='major', labelsize=12)
 
 
-ax2.set_title('Distribution of Salary Among Automobile, Oil and Education Industries', fontsize = 22)
+ax3.boxplot(education_salary_df['salary'], patch_artist=True,
+            boxprops=dict(facecolor='#5ABCB9', color='#5ABCB9'))
 
-ax1.tick_params(axis = 'both', which = 'major', labelsize = 12)
+ax3.set_xlabel('Education Industry', fontsize=16)
+ax3.tick_params(axis='both', which='major', labelsize=12)
+
+
+ax2.set_title(
+             'Distribution of Salary Among Automobile, Oil and Education Industries',
+             fontsize=22)
+
+ax1.tick_params(axis='both', which='major', labelsize=12)
 ```
-
 
 <img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_32_0.png" alt="linearly separable data">
 
@@ -521,20 +526,21 @@ This visualisation suggests there may be a link between the type of industry one
 
 
 ```python
-industry_salary_df = data_combined.groupby('industry').mean().reset_index().sort_values('salary')
+industry_salary_df = data_combined.groupby(
+                     'industry').mean().reset_index().sort_values('salary')
 ```
 
 
 ```python
-plt.figure(figsize = (12, 6))
+plt.figure(figsize=(12, 6))
 
 plot_bar(industry_salary_df, 'industry', 'salary', '#4BC6B9',
          'Average Salary Offered By Industry', 'Industry',
          'Salary (Arbitrary Units)')
 ```
 
-
 <img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_36_0.png" alt="linearly separable data">
+
 
 
 **Interpretation**
@@ -559,27 +565,25 @@ jobType_df = data_combined.loc[:, ['jobType', 'salary']].sort_values('salary')
 # write function to sort salary by median
 
 def boxplot_sorted(df, by, column, rot=0,
-                   patch_artist = True,
-                   showfliers = True):
-
-    df2 = pd.DataFrame({col:vals[column] for col, vals in df.groupby(by)})
+                   patch_artist=True,
+                   showfliers=True):
+    df2 = pd.DataFrame({col: vals[column] for col, vals in df.groupby(by)})
     meds = df2.median().sort_values()
     return df2[meds.index].boxplot(rot=rot, return_type="axes")
 ```
 
 
 ```python
-plt.figure(figsize = (14, 8))
+plt.figure(figsize=(14, 8))
 
 boxplot_sorted(jobType_df, 'jobType', 'salary')
 
 plt.title('How Salary Differs With Job Seniority')
 plt.ylabel('Salary (Arbitrary Units)')
 plt.xlabel('Type/Seniority of Job')
-plt.tick_params(axis = 'both', which = 'major', labelsize = 9)
+plt.tick_params(axis='both', which='major', labelsize=9)
 plt.show()
 ```
-
 
 <img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_41_0.png" alt="linearly separable data">
 
@@ -605,17 +609,24 @@ df_corr = data_combined.copy(deep=True)
 
 
 ```python
-df_corr[['companyId','jobType','degree',
-         'major','industry']] = data_combined[['companyId','jobType',
-                                               'degree','major','industry']].astype('category')
+df_corr[['companyId',
+         'jobType',
+         'degree',
+         'major',
+         'industry']] = data_combined[['companyId',
+                                       'jobType',
+                                       'degree',
+                                       'major',
+                                       'industry']].astype('category')
+
+df_columns_corr = ['companyId', 'jobType', 'degree', 'major', 'industry']
 ```
 
 
 ```python
-df_columns_corr=['companyId','jobType','degree','major','industry']
 def lab_encoder(columns):
     for column in columns:
-        df_corr[column]=df_corr.groupby(column).transform('mean')['salary']
+        df_corr[column] = df_corr.groupby(column).transform('mean')['salary']
 ```
 
 
@@ -625,197 +636,21 @@ lab_encoder(df_columns_corr)
 
 
 ```python
-df_corr
+# create correlation matrix
+
+plt.figure(figsize=(12, 10))
+
+sns.heatmap(df_corr.corr(), annot=True, fmt='.2f', cmap='mako')
 ```
 
 
 
 
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>jobId</th>
-      <th>companyId</th>
-      <th>jobType</th>
-      <th>degree</th>
-      <th>major</th>
-      <th>industry</th>
-      <th>yearsExperience</th>
-      <th>milesFromMetropolis</th>
-      <th>salary</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>0</td>
-      <td>JOB1362684407687</td>
-      <td>115.345049</td>
-      <td>135.458547</td>
-      <td>130.505647</td>
-      <td>133.322042</td>
-      <td>115.735540</td>
-      <td>10</td>
-      <td>83</td>
-      <td>130</td>
-    </tr>
-    <tr>
-      <td>1</td>
-      <td>JOB1362684407688</td>
-      <td>115.756548</td>
-      <td>145.311425</td>
-      <td>101.921085</td>
-      <td>102.583864</td>
-      <td>121.645362</td>
-      <td>3</td>
-      <td>73</td>
-      <td>101</td>
-    </tr>
-    <tr>
-      <td>2</td>
-      <td>JOB1362684407689</td>
-      <td>116.224249</td>
-      <td>125.368630</td>
-      <td>135.490979</td>
-      <td>130.372436</td>
-      <td>115.735540</td>
-      <td>10</td>
-      <td>38</td>
-      <td>137</td>
-    </tr>
-    <tr>
-      <td>3</td>
-      <td>JOB1362684407690</td>
-      <td>116.199380</td>
-      <td>115.368518</td>
-      <td>135.490979</td>
-      <td>129.072085</td>
-      <td>109.435222</td>
-      <td>8</td>
-      <td>17</td>
-      <td>142</td>
-    </tr>
-    <tr>
-      <td>4</td>
-      <td>JOB1362684407691</td>
-      <td>115.888501</td>
-      <td>125.368630</td>
-      <td>125.454663</td>
-      <td>130.372436</td>
-      <td>130.747659</td>
-      <td>8</td>
-      <td>16</td>
-      <td>163</td>
-    </tr>
-    <tr>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <td>999995</td>
-      <td>JOB1362685407682</td>
-      <td>116.134865</td>
-      <td>125.368630</td>
-      <td>125.454663</td>
-      <td>129.072085</td>
-      <td>115.735540</td>
-      <td>19</td>
-      <td>94</td>
-      <td>88</td>
-    </tr>
-    <tr>
-      <td>999996</td>
-      <td>JOB1362685407683</td>
-      <td>116.176489</td>
-      <td>135.481067</td>
-      <td>101.921085</td>
-      <td>102.583864</td>
-      <td>130.747659</td>
-      <td>12</td>
-      <td>35</td>
-      <td>160</td>
-    </tr>
-    <tr>
-      <td>999997</td>
-      <td>JOB1362685407684</td>
-      <td>116.261277</td>
-      <td>95.333087</td>
-      <td>101.921085</td>
-      <td>102.583864</td>
-      <td>99.448386</td>
-      <td>16</td>
-      <td>81</td>
-      <td>64</td>
-    </tr>
-    <tr>
-      <td>999998</td>
-      <td>JOB1362685407685</td>
-      <td>116.199339</td>
-      <td>135.458547</td>
-      <td>130.505647</td>
-      <td>102.583864</td>
-      <td>115.735540</td>
-      <td>6</td>
-      <td>5</td>
-      <td>149</td>
-    </tr>
-    <tr>
-      <td>999999</td>
-      <td>JOB1362685407686</td>
-      <td>115.870161</td>
-      <td>95.333087</td>
-      <td>125.454663</td>
-      <td>102.583864</td>
-      <td>99.448386</td>
-      <td>20</td>
-      <td>11</td>
-      <td>88</td>
-    </tr>
-  </tbody>
-</table>
-<p>999995 rows × 9 columns</p>
-</div>
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f8869e06d50>
 
 
 
-
-```python
-plt.figure(figsize = (12, 10))
-
-sns.heatmap(df_corr.corr(), annot=True, fmt = '.2f', cmap = 'mako')
-```
-
-
-
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x7ffd5f585ed0>
-
-
-
-
-<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_49_1.png" alt="linearly separable data">
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_48_1.png" alt="linearly separable data">
 
 
 **Interpretation**
@@ -836,7 +671,8 @@ I will then calculate RMSE to find a benchmark to improve upon.
 
 
 ```python
-data_combined['Baseline Prediction'] = data_combined.groupby('industry')['salary'].transform('mean')
+data_combined['Baseline Prediction'] = data_combined.groupby(
+                                       'industry')['salary'].transform('mean')
 ```
 
 
@@ -844,8 +680,8 @@ data_combined['Baseline Prediction'] = data_combined.groupby('industry')['salary
 # separate features, output and baseline predictions from one another
 
 X_train = data_combined[['jobId', 'companyId', 'jobType',
-                 'degree', 'major', 'industry',
-                 'yearsExperience', 'milesFromMetropolis']]
+                         'degree', 'major', 'industry',
+                         'yearsExperience', 'milesFromMetropolis']]
 
 y_train = data_combined['salary']
 
@@ -877,7 +713,7 @@ print('The baseline model MSE is {}'.format(mse))
 
 ### Hypothesising A Solution
 
-The three models I have chosen are
+The three models I have chosen to train are:
 
 **Linear and Polynomial Regression**: Linear regression is a simple and effective model that serves as a good place to start. We saw from our EDA that the two interval variables we have a weak linear relationship with salary.
 
@@ -939,9 +775,9 @@ data_combined['Degree Category'] = data_combined['degree']
 
 ```python
 data_combined = data_combined.replace({'Degree Category':
-                                       {'NONE':0, 'HIGH_SCHOOL':1,
-                                        'BACHELORS':2, 'MASTERS':3,
-                                        'DOCTORAL':4}})
+                                       {'NONE': 0, 'HIGH_SCHOOL': 1,
+                                        'BACHELORS': 2, 'MASTERS': 3,
+                                        'DOCTORAL': 4}})
 ```
 
 ### Convert categorical features to numerical features: 'jobType'
@@ -979,10 +815,10 @@ data_combined.jobType.value_counts()
 data_combined['Job Type Category'] = data_combined['jobType']
 
 data_combined = data_combined.replace({'Job Type Category':
-                                       {'JANITOR':0, 'JUNIOR':1,
-                                        'SENIOR':2, 'MANAGER':3,
-                                        'VICE_PRESIDENT':4, 'CTO':5,
-                                        'CFO':6, 'CEO':7}})
+                                       {'JANITOR': 0, 'JUNIOR': 1,
+                                        'SENIOR': 2, 'MANAGER': 3,
+                                        'VICE_PRESIDENT': 4, 'CTO': 5,
+                                        'CFO': 6, 'CEO': 7}})
 ```
 
 
@@ -1208,122 +1044,15 @@ Hence, it would be better to use dummy variables. One disadvantage of this, as r
 
 ```python
 major_dummy_data = pd.get_dummies(data_combined['major'])
-major_dummy_data = major_dummy_data.rename({'BIOLOGY':'Major_Biology',
-                                            'BUSINESS':'Major_Business',
-                                            'CHEMISTRY':'Major_Chemistry',
-                                            'COMPSCI':'Major_CompSci',
-                                            'ENGINEERING':'Major_Engineering',
-                                            'LITERATURE':'Major_Literature',
-                                            'MATH':'Major_Math',
-                                            'NONE':'Major_None',
-                                            'PHYSICS':'Major_Physics'},
-                                             axis = 1)
 
-major_dummy_data.head()
+# rename newly created dummies
+for column in major_dummy_data.columns:
+    major_dummy_data.rename(columns={column: 'major_' + str(column)}, inplace=True)
 ```
 
 
-
-
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Major_Biology</th>
-      <th>Major_Business</th>
-      <th>Major_Chemistry</th>
-      <th>Major_CompSci</th>
-      <th>Major_Engineering</th>
-      <th>Major_Literature</th>
-      <th>Major_Math</th>
-      <th>Major_None</th>
-      <th>Major_Physics</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <td>2</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <td>3</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <td>4</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-
-
-
 ```python
-data_combined = pd.concat([data_combined, major_dummy_data], axis = 1)
+data_combined = pd.concat([data_combined, major_dummy_data], axis=1)
 ```
 
 ### Convert categorical features to numerical features: 'industry'
@@ -1334,15 +1063,10 @@ Similar to the 'major' variable, 'industry' is also nominal; we cannot intuitive
 ```python
 industry_dummy_data = pd.get_dummies(data_combined['industry'])
 
-industry_dummy_data = industry_dummy_data.rename({'AUTO':'Industry_Auto',
-                                            'EDUCATION':'Industry_Education',
-                                            'FINANCE':'Industry_Finance',
-                                            'HEALTH':'Industry_Health',
-                                            'OIL':'Industry_Oil',
-                                            'SERVICE':'Industry_Service',
-                                            'WEB':'Industry_Web'},
-                                             axis = 1)
-
+for column in industry_dummy_data.columns:
+    industry_dummy_data.rename(
+                              columns={column: 'industry_' + str(column)},
+                              inplace=True)
 
 
 industry_dummy_data.head()
@@ -1369,13 +1093,13 @@ industry_dummy_data.head()
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>Industry_Auto</th>
-      <th>Industry_Education</th>
-      <th>Industry_Finance</th>
-      <th>Industry_Health</th>
-      <th>Industry_Oil</th>
-      <th>Industry_Service</th>
-      <th>Industry_Web</th>
+      <th>industry_AUTO</th>
+      <th>industry_EDUCATION</th>
+      <th>industry_FINANCE</th>
+      <th>industry_HEALTH</th>
+      <th>industry_OIL</th>
+      <th>industry_SERVICE</th>
+      <th>industry_WEB</th>
     </tr>
   </thead>
   <tbody>
@@ -1437,12 +1161,131 @@ industry_dummy_data.head()
 
 
 ```python
-data_combined = pd.concat([data_combined, industry_dummy_data], axis = 1)
+data_combined = pd.concat([data_combined, industry_dummy_data], axis=1)
+```
+
+### Create mean salary for each job type
+
+
+```python
+data_combined['Mean Salary Per Job Type'] = data_combined.groupby(
+                                                                 'jobType')['salary'].transform('mean')
+```
+
+### Checking for correlations between selected newly engineered features and 'salary'
+
+We will investigate only the ordinal features and mean salary per job type. Including dummy variables in the correlation heatmap will lead to a congested visualisation
+
+
+```python
+plt.figure(figsize=(8, 6))
+
+new_features_data = data_combined[['Degree Category', 'Job Type Category',
+                                   'Mean Salary Per Job Type', 'salary']]
+
+sns.heatmap(new_features_data.corr(), annot=True, fmt='.2f', cmap='mako')
+```
+
+
+
+
+    <matplotlib.axes._subplots.AxesSubplot at 0x7f884a92f090>
+
+
+
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_77_1.png" alt="linearly separable data">
+
+
+Thankfully, our newly created features seem to have decent predictive power, as suggested by the correlation coefficients.
+
+
+These coefficients are 0.38, 0.58 and 0.6 for Degree Category, Job Type Category and Mean Salary Per Job Type, respectively
+
+### Create and Test models
+
+
+```python
+# repeat step of separating features, output and
+# baseline predictions from one another to include
+# newly created features
+
+X_train = data_combined
+X_train = X_train.drop(['salary', 'jobId', 'companyId',
+                        'jobType', 'degree', 'major',
+                        'industry'], axis=1)
+
+y_train = data_combined['salary']
+```
+
+#### My metric will be MSE and my goal is <360
+
+
+```python
+# initialise models
+
+lr = linear_model.LinearRegression()
+svm_reg = LinearSVR(epsilon=0.1)
+gb_reg = GradientBoostingRegressor()
+rf_reg = RandomForestRegressor()
+
+
+# for linear svc
+
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+
+
+# for GB regressor
+
+sample_data = data_combined.sample(n=500000, random_state=42)
+
+X_train_sample_500k = sample_data.drop(['salary', 'jobId', 'companyId',
+                                        'jobType', 'degree', 'major',
+                                        'industry'], axis=1)
+
+y_train_sample_500k = sample_data['salary']
 ```
 
 
 ```python
-data_combined.tail()
+# loop through different regressors
+
+regressors = [lr, svm_reg, gb_reg]
+
+mse_df = pd.DataFrame(columns=['Regressor', '5-fold MSE Mean'])
+
+for reg in regressors:
+
+    name = reg.__class__.__name__
+
+    if reg == svm_reg:
+        mse_score = cross_val_score(reg, X_train_scaled, y_train,
+                                    cv=5, scoring='neg_mean_squared_error')
+        mse_mean = mse_score.mean()
+
+    elif reg == gb_reg:
+
+        mse_score = cross_val_score(reg, X_train_sample_500k,
+                                    y_train_sample_500k, cv=5,
+                                    scoring='neg_mean_squared_error')
+        mse_mean = mse_score.mean()
+
+    else:
+
+        mse_score = cross_val_score(reg, X_train, y_train,
+                                    cv=5, scoring='neg_mean_squared_error')
+        mse_mean = mse_score.mean()
+
+    log_entry = pd.DataFrame([[name, mse_mean]],
+                             columns=['Regressor', '5-fold MSE Mean'])
+
+    mse_df = mse_df.append(log_entry)
+```
+
+
+```python
+mse_df.sort_values('5-fold MSE Mean', ascending=False, inplace=True)
+round(mse_df, 2)
 ```
 
 
@@ -1466,239 +1309,33 @@ data_combined.tail()
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>jobId</th>
-      <th>companyId</th>
-      <th>jobType</th>
-      <th>degree</th>
-      <th>major</th>
-      <th>industry</th>
-      <th>yearsExperience</th>
-      <th>milesFromMetropolis</th>
-      <th>salary</th>
-      <th>Baseline Prediction</th>
-      <th>...</th>
-      <th>Major_Math</th>
-      <th>Major_None</th>
-      <th>Major_Physics</th>
-      <th>Industry_Auto</th>
-      <th>Industry_Education</th>
-      <th>Industry_Finance</th>
-      <th>Industry_Health</th>
-      <th>Industry_Oil</th>
-      <th>Industry_Service</th>
-      <th>Industry_Web</th>
+      <th>Regressor</th>
+      <th>5-fold MSE Mean</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>999995</td>
-      <td>JOB1362685407682</td>
-      <td>COMP56</td>
-      <td>VICE_PRESIDENT</td>
-      <td>BACHELORS</td>
-      <td>CHEMISTRY</td>
-      <td>HEALTH</td>
-      <td>19</td>
-      <td>94</td>
-      <td>88</td>
-      <td>115.735540</td>
-      <td>...</td>
       <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
+      <td>GradientBoostingRegressor</td>
+      <td>-366.45</td>
     </tr>
     <tr>
-      <td>999996</td>
-      <td>JOB1362685407683</td>
-      <td>COMP24</td>
-      <td>CTO</td>
-      <td>HIGH_SCHOOL</td>
-      <td>NONE</td>
-      <td>FINANCE</td>
-      <td>12</td>
-      <td>35</td>
-      <td>160</td>
-      <td>130.747659</td>
-      <td>...</td>
       <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
+      <td>LinearRegression</td>
+      <td>-386.64</td>
     </tr>
     <tr>
-      <td>999997</td>
-      <td>JOB1362685407684</td>
-      <td>COMP23</td>
-      <td>JUNIOR</td>
-      <td>HIGH_SCHOOL</td>
-      <td>NONE</td>
-      <td>EDUCATION</td>
-      <td>16</td>
-      <td>81</td>
-      <td>64</td>
-      <td>99.448386</td>
-      <td>...</td>
       <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <td>999998</td>
-      <td>JOB1362685407685</td>
-      <td>COMP3</td>
-      <td>CFO</td>
-      <td>MASTERS</td>
-      <td>NONE</td>
-      <td>HEALTH</td>
-      <td>6</td>
-      <td>5</td>
-      <td>149</td>
-      <td>115.735540</td>
-      <td>...</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <td>999999</td>
-      <td>JOB1362685407686</td>
-      <td>COMP59</td>
-      <td>JUNIOR</td>
-      <td>BACHELORS</td>
-      <td>NONE</td>
-      <td>EDUCATION</td>
-      <td>20</td>
-      <td>11</td>
-      <td>88</td>
-      <td>99.448386</td>
-      <td>...</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
+      <td>LinearSVR</td>
+      <td>-387.86</td>
     </tr>
   </tbody>
 </table>
-<p>5 rows × 28 columns</p>
 </div>
 
 
 
-### Create mean salary for each job type
-
-
-```python
-data_combined['Mean Salary Per Job Type'] = data_combined.groupby('jobType')['salary'].transform('mean')
-```
-
-### Checking for correlations between selected newly engineered features and 'salary'
-
-We will investigate only the ordinal features and mean salary per job type. Including dummy variables in the correlation heatmap will lead to a congested visualisation
-
-
-```python
-plt.figure(figsize = (8, 6))
-
-new_features_data = data_combined[['Degree Category', 'Job Type Category',
-                     'Mean Salary Per Job Type', 'salary']]
-
-sns.heatmap(new_features_data.corr(), annot = True, fmt = '.2f', cmap = 'mako')
-```
-
-
-
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x7ffd93eb5990>
-
-
-
-
-<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_79_1.png" alt="linearly separable data">
-
-
-Thankfully, our newly created features seem to have decent predictive power, as suggested by the correlation coefficients.
-
-
-These coefficients are 0.38, 0.58 and 0.6 for Degree Category, Job Type Category and Mean Salary Per Job Type, respectively
-
-### Create and Test models
-
-
-```python
-# repeat step of separating features, output and
-# baseline predictions from one another to include
-# newly created features
-
-X_train = data_combined
-X_train = X_train.drop(['salary', 'jobId', 'companyId',
-                        'jobType', 'degree', 'major',
-                        'industry'], axis = 1)
-
-y_train = data_combined['salary']
-```
-
-#### My metric will be MSE and my goal is <360
-
-
-```python
-
-# initialise models
-lr = linear_model.LinearRegression()
-svm_reg = LinearSVR(epsilon = 0.1)
-tree_reg = DecisionTreeRegressor()
-rf_reg = RandomForestRegressor()
-
-# create simple function to find 5-fold cross-validation MSE score mean
-
-def cross_val_mse(model, X, y):
-    model_scores = cross_val_score(model, X, y,
-                                  scoring = 'neg_mean_squared_error',
-                                  cv = 5)
-    print('The mean cross-validation score is {}'.format(model_scores.mean()))
-```
-
-### Linear Regression
-
-
-```python
-cross_val_mse(linear_model.LinearRegression(), X_train, y_train)
-```
-
-    The mean cross-validation score is -386.63858899427606
-
+The GradientBoostingRegressor is the best performer so far. I want to fit one more model, which is polynomial regression. It may be the case that adding more features gives us more predictive power
 
 ### Polynomial Regression with Degree = 2
 
@@ -1706,114 +1343,94 @@ cross_val_mse(linear_model.LinearRegression(), X_train, y_train)
 ```python
 # create polynomial features with degree = 2
 
-
-
-pr = PolynomialFeatures(degree = 2, include_bias = False)
+pr = PolynomialFeatures(degree=2, include_bias=False)
 
 x_polly = pr.fit_transform(X_train)
 
-cross_val_mse(lr, x_polly, y_train)
-```
-
-### Linear SVR
-
-
-```python
-# scale data as SVM is sensitive to different scales
-
-
-scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-
-cross_val_mse(svm_reg, X_train_scaled, y_train)
-```
-
-    The mean cross-validation score is -387.88605390076617
-
-
-### Gradient Boosting Regressor
-
-Gradient Boosting Regressor trains each individual learner sequentially. As a result, it does not scale well with data. Let's take a smaller sample of our data to train it
-
-
-```python
-sample_data = data_combined.sample(n = 500000, random_state = 42)
-
-X_train_sample_500k = sample_data.drop(['salary', 'jobId', 'companyId',
-                        'jobType', 'degree', 'major',
-                        'industry'], axis = 1)
-
-y_train_sample_500k = sample_data['salary']
-
+poly_reg_score = cross_val_score(lr, x_polly, y_train, cv=5,
+                                 scoring='neg_mean_squared_error')
 ```
 
 
 ```python
-
-
-gb_reg = GradientBoostingRegressor()
-
-cross_val_mse(gb_reg, X_train_sample_500k, y_train_sample_500k)
+print(poly_reg_score.mean())
 ```
 
-    The mean cross-validation score is -366.4483854053291
+    -354.1293058563211
 
 
-Now it is a good idea to perform a grid search and find the optimal hyperparameter values for our Gradient Boosting Regressor model. I chose to do this for this model only, as opposed to using grid search for Linear SVR and Decision Trees Regressor also, because of the following:
+Polynomial Regression with n = 2 gives us the best performing model so far, better than the Gradient Boosting Regressor
 
-1. With no hyperparameter tuning, Gradient Boosting Regressor performs the best, compare to the other 2 models
+---
 
+## Grid Search
 
-2. Grid Search can be computationally expensive and take a long time to find solutions, so it is best performed on the most promising model, which in reference to point 1, is Gradient Boosting Regressor
+Now it is a good idea to perform a grid search and find the optimal hyperparameter values for our Gradient Boosting Regressor and LinearSVC models. I am not tuning my polynomial regression model even though it is the best model, because it does not have many hyperparameters to tune.
 
 To perform a grid search, I will take another, smaller sample of data to speed this process up
 
 
 ```python
-sample_data = data_combined.sample(n = 10000, random_state = 42)
+sample_data = data_combined.sample(n=10000, random_state=42)
 
 X_train_sample_10k = sample_data.drop(['salary', 'jobId', 'companyId',
-                        'jobType', 'degree', 'major',
-                        'industry'], axis = 1)
+                                       'jobType', 'degree', 'major',
+                                       'industry'], axis=1)
 
 y_train_sample_10k = sample_data['salary']
 ```
 
 
 ```python
-# initialise parameters
-param_grid = [ {'max_features': [5, 10, 15], 'min_samples_split': [10, 100, 1000],
-               'learning_rate':[0.5, 1, 1.5], 'max_depth':[4, 8, 12]}]
+pipe = Pipeline([("regressor", LinearSVR(max_iter=100000))])
 
-gb_reg_1 = GradientBoostingRegressor(n_estimators = 100)
 
-# initialise Grid Search
-Grid_gb = GridSearchCV(gb_reg_1, param_grid, cv = 5, scoring = 'neg_mean_squared_error')
+grid_param = [{'regressor': [(LinearSVR(max_iter = 100000))],
+               'regressor__epsilon': [0.01, 0.05, 1],
+               'regressor__C': [0.01, 0.1, 0.5, 0.9]},
 
-# fit
-Grid_gb.fit(X_train_sample_10k, y_train_sample_10k)
+              {'regressor': [GradientBoostingRegressor()],
+               'regressor__learning_rate': [0.1, 0.5],
+               'regressor__n_estimators': [100, 300],
+               'regressor__max_features': [5, 10],
+               'regressor__min_samples_split': [10, 50, 100],
+               'regressor__max_depth': [4, 8]}]
 
-# find best parameters
-print(Grid_gb.best_estimator_)
-
-#find scores
-gb_grid_scores = Grid_gb.cv_results_
-gb_grid_scores['mean_test_score']
+grid_search = GridSearchCV(pipe, grid_param, cv=5,
+                           scoring='neg_mean_squared_error')
+best_model = grid_search.fit(X_train_sample_10k, y_train_sample_10k)
 ```
 
 
 ```python
-#cross validation score of tuned Gradient Boosting Regressor
-
-
-gb_reg_2 = GradientBoostingRegressor(n_estimators = 160, learning_rate = 0.1,
-                                     max_depth = 4, max_features = 10, min_samples_split = 1000)
-
-cross_val_mse(gb_reg_2, X_train_sample_500k, y_train_sample_500k)
+print(best_model.best_estimator_)
+print('MSE of best model is {}%'.format(best_model.score(X_train, y_train)))
 ```
 
-    The mean cross-validation score is -358.93489018440266
+    Pipeline(memory=None,
+             steps=[('regressor',
+                     GradientBoostingRegressor(alpha=0.9, criterion='friedman_mse',
+                                               init=None, learning_rate=0.1,
+                                               loss='ls', max_depth=4,
+                                               max_features=10, max_leaf_nodes=None,
+                                               min_impurity_decrease=0.0,
+                                               min_impurity_split=None,
+                                               min_samples_leaf=1,
+                                               min_samples_split=100,
+                                               min_weight_fraction_leaf=0.0,
+                                               n_estimators=100,
+                                               n_iter_no_change=None,
+                                               presort='auto', random_state=None,
+                                               subsample=1.0, tol=0.0001,
+                                               validation_fraction=0.1, verbose=0,
+                                               warm_start=False))],
+             verbose=False)
+    MSE of best model is -369.33254613652315%
 
+
+Interestingly, grid search provides us with a GB Regressor model with an MSE of 369 units; this is worse than the default configuration of GB Regressor which gave us 366 units. One possibility behind this is that I am not passing the right ranges of parameters into grid search to be iterated through.
+
+Since GB Regressor trains models sequentially, it does not scale well with data. For that reason, I am not going to re-run grid search with differing combinations of parameters until I see an improvement in MSE beyond 366 units. Doing so will be computationally expensive and take a lot of time
 
 ### Selecting the best model
 
@@ -1825,33 +1442,78 @@ The best model is polynomial regression with degree = 2. It achieved an MSE of 3
 
 
 ```python
-#write script that trains model on entire training set, saves model to disk,
-#and scores the "test" dataset
+# write script that trains model on entire training set, saves model to disk,
+# and scores the "test" dataset
 
-def train_test_model(gb_reg_tuned, X_train, y_train, X_test, y_test):
+# load test feature data
+
+test_data = pd.read_csv("data/test_features.csv")
+
+# perform same feature engineering on test features as on train features
+
+# encode ordinal variables
+test_data['Degree Category'] = test_data['degree']  # degree variable
+
+test_data = test_data.replace({'Degree Category':
+                               {'NONE': 0, 'HIGH_SCHOOL': 1,
+                                'BACHELORS': 2, 'MASTERS': 3,
+                                'DOCTORAL': 4}}, inplace=True)
+
+test_data['Job Type Category'] = test_data['jobType']  # job type variable
+
+test_data = test_data.replace({'Job Type Category':
+                               {'JANITOR': 0, 'JUNIOR': 1,
+                                'SENIOR': 2, 'MANAGER': 3,
+                                'VICE_PRESIDENT': 4, 'CTO': 5,
+                                'CFO': 6, 'CEO': 7}}, inplace=True)
+
+# encode nominal variables
+major_dummy_data = pd.get_dummies(test_data['major'])  # major variable
+
+for column in major_dummy_data.columns:
+    major_dummy_data.rename(
+                           columns = {column: 'major_' + str(column)}, inplace=True)
+
+test_data = pd.concat([test_data, major_dummy_data], axis=1)
+
+
+
+industry_dummy_data = pd.get_dummies(test_data['industry'])  # industry variable
+
+for column in industry_dummy_data.columns:
+    industry_dummy_data.rename(
+                              columns = {column: 'industry_' + str(column)}, inplace=True)
+
+test_data = pd.concat([test_data, industry_dummy_data], axis=1)
+
+
+# drop unnecessary features on test set
+
+X_test = test_data.drop(['jobId', 'companyId',
+                         'jobType', 'degree', 'major',
+                         'industry'], axis=1)
+
+
+# write function to train model on train data then make predictions on test data
+
+def train_test_model(model, X_train, y_train, X_test, y_test):
 
 
     X_train = X_train.drop(['salary', 'jobId', 'companyId',
-                        'jobType', 'degree', 'major',
-                        'industry'], axis = 1)
+                            'jobType', 'degree', 'major',
+                            'industry'], axis=1)
 
 
     # initialise tuned model
-    gb_reg_tuned = GradientBoostingRegressor(n_estimators = 160, learning_rate = 0.1,
-                                         max_depth = 4, max_features = 10,
-                                         min_samples_split = 1000)
+    model = GradientBoostingRegressor(n_estimators=160, learning_rate=0.1,
+                                      max_depth=4, max_features=10,
+                                      min_samples_split=1000)
 
     # fit model on X_train and y_train
-    gb_reg_tuned.fit(X_train, y_train)
-
-
-    X_test = X_test.drop(['salary', 'jobId', 'companyId',
-                        'jobType', 'degree', 'major',
-                        'industry'], axis = 1)
-
+    model.fit(X_train, y_train)
 
     # predict y_predicted using trained model
-    y_predicted = gb_reg_tuned.predict(X_test)
+    y_predicted = model.predict(X_test)
 
     # test model and print mse
     mse = metrics.mean_squared_error(y_test, y_predicted)
@@ -1865,34 +1527,36 @@ def train_test_model(gb_reg_tuned, X_train, y_train, X_test, y_test):
 ```python
 # create dataframe
 
-mse_performance_data = pd.DataFrame(columns = ['Model', 'MSE'])
+mse_performance_data = pd.DataFrame(columns=['Model', 'MSE'])
 mse_performance_data['Model'] = pd.Series(['Linear Regression',
                                            'Polynomial Regression (n = 2)',
-                                           'Linear SVR', 'Decision Tree Regressor',
+                                           'Linear SVR',
+                                           'Decision Tree Regressor',
                                            'GB Regressor',
                                            'GB Regressor (tuned)'])
-mse_performance_data['MSE'] = pd.Series([386.64, 354.13, 387.89, 689.75, 380.30,
-                                         358.43])
 
-mse_performance_data.sort_values('MSE', ascending = False, inplace = True)
+mse_performance_data['MSE'] = pd.Series([386.64, 354.13,
+                                         387.89, 689.75,
+                                         380.30, 358.43])
+
+mse_performance_data.sort_values('MSE', ascending=False, inplace=True)
 ```
 
 
 ```python
 # plot
 
-plt.figure(figsize = (20, 8))
+plt.figure(figsize=(20, 8))
 
 plot_bar(mse_performance_data, 'Model', 'MSE', '#4E937A',
          '5-fold MSE for 5 different models', 'Model Name',
          'MSE')
 ```
 
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_102_0.png" alt="linearly separable data">
 
-<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_106_0.png" alt="linearly separable data">
 
-
-### Save predictions and model to CSV file
+### Save model and predictions
 
 
 ```python
@@ -1904,15 +1568,13 @@ predicted_salary = y_predicted
 
 predicted_salary.to_csv('/Users/User Name/Desktop/Predicted Salaries.csv')
 
-# save model
-
-
-
 # Save the trained model
 
-gb_reg_tuned = GradientBoostingRegressor(n_estimators = 160, learning_rate = 0.1,
-                                         max_depth = 4, max_features = 10,
-                                         min_samples_split = 1000)
+gb_reg_tuned = GradientBoostingRegressor(n_estimators=160,
+                                         learning_rate=0.1,
+                                         max_depth=4,
+                                         max_features=10,
+                                         min_samples_split=1000)
 
 gb_reg_tuned.fit(X_train, y_train)
 
