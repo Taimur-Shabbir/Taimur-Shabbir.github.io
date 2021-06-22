@@ -650,7 +650,7 @@ sns.heatmap(df_corr.corr(), annot=True, fmt='.2f', cmap='mako')
 
 
 
-<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_48_1.png" alt="linearly separable data">
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_49_1.png" alt="linearly separable data">
 
 
 **Interpretation**
@@ -1193,7 +1193,7 @@ sns.heatmap(new_features_data.corr(), annot=True, fmt='.2f', cmap='mako')
 
 
 
-<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_77_1.png" alt="linearly separable data">
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_79_1.png" alt="linearly separable data">
 
 
 Thankfully, our newly created features seem to have decent predictive power, as suggested by the correlation coefficients.
@@ -1553,7 +1553,7 @@ plot_bar(mse_performance_data, 'Model', 'MSE', '#4E937A',
          'MSE')
 ```
 
-<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_102_0.png" alt="linearly separable data">
+<img src="{{ site.url }}{{ site.baseurl }}/images/salary/output_106_0.png" alt="linearly separable data">
 
 
 ### Save model and predictions
